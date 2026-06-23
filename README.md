@@ -35,10 +35,16 @@
 
 ## 📥 Download
 
-### Windows
-[**Download Installer**](https://github.com/yourname/oh-my-MindBranch/releases/latest) · `oh-my-MindBranch-Setup-1.0.0.exe`
+### Windows — Latest Release
+[👉 View all releases](https://github.com/quick123-666/oh-my-MindBranch/releases/latest)
 
-Or check the [`dist/`](dist/) directory in this repository for pre-built binaries.
+| 类型 | 文件 | 大小 |
+|------|------|------|
+| 🖥️ **Installer** | [oh-my-MindBranch-1.0.0-setup.exe](https://github.com/quick123-666/oh-my-MindBranch/releases/download/v1.0.0/oh-my-MindBranch-1.0.0-setup.exe) | 77 MB |
+| 📦 **Portable** | [oh-my-MindBranch-1.0.0-portable.zip](https://github.com/quick123-666/oh-my-MindBranch/releases/download/v1.0.0/oh-my-MindBranch-1.0.0-portable.zip) | 108 MB |
+
+> 💡 **Installer** — standard install, auto-creates Start Menu shortcuts
+> 💡 **Portable** — no installation needed, run directly from any folder
 
 ---
 
@@ -52,7 +58,7 @@ Or check the [`dist/`](dist/) directory in this repository for pre-built binarie
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourname/oh-my-MindBranch.git
+git clone https://github.com/quick123-666/oh-my-MindBranch.git
 cd oh-my-MindBranch
 
 # Install dependencies
@@ -192,10 +198,16 @@ oh-my-MindBranch/
 
 ## 📥 下载
 
-### Windows
-[**下载安装包**](https://github.com/yourname/oh-my-MindBranch/releases/latest) · `oh-my-MindBranch-Setup-1.0.0.exe`
+### Windows — 最新版本
+[👉 查看所有版本](https://github.com/quick123-666/oh-my-MindBranch/releases/latest)
 
-或查看本仓库 [`dist/`](dist/) 目录中的预编译二进制。
+| 类型 | 文件 | 大小 |
+|------|------|------|
+| 🖥️ **安装包** | [oh-my-MindBranch-1.0.0-setup.exe](https://github.com/quick123-666/oh-my-MindBranch/releases/download/v1.0.0/oh-my-MindBranch-1.0.0-setup.exe) | 77 MB |
+| 📦 **便携版** | [oh-my-MindBranch-1.0.0-portable.zip](https://github.com/quick123-666/oh-my-MindBranch/releases/download/v1.0.0/oh-my-MindBranch-1.0.0-portable.zip) | 108 MB |
+
+> 💡 **安装包** — 标准安装，自动创建开始菜单快捷方式
+> 💡 **便携版** — 无需安装，文件夹内直接运行
 
 ## 🚀 快速开始
 
@@ -207,7 +219,7 @@ oh-my-MindBranch/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourname/oh-my-MindBranch.git
+git clone https://github.com/quick123-666/oh-my-MindBranch.git
 cd oh-my-MindBranch
 
 # 安装依赖
