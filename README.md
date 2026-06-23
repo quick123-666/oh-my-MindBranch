@@ -35,7 +35,7 @@
 
 ## 📥 Download
 
-### Windows — Latest Release
+### 🖥️ Windows — Latest Release
 [👉 View all releases](https://github.com/quick123-666/oh-my-MindBranch/releases/latest)
 
 | 类型 | 文件 | 大小 |
@@ -198,7 +198,7 @@ oh-my-MindBranch/
 
 ## 📥 下载
 
-### Windows — 最新版本
+### 🖥️ Windows — 最新版本
 [👉 查看所有版本](https://github.com/quick123-666/oh-my-MindBranch/releases/latest)
 
 | 类型 | 文件 | 大小 |
