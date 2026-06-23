@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <!-- 背景渐变 -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eef2ff"/>
+      <stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <!-- 中心节点渐变 -->
+    <linearGradient id="centerGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <!-- 阴影 -->
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1e1b4b" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- 圆角背景 -->
+  <rect x="0" y="0" width="256" height="256" rx="56" ry="56" fill="url(#bgGradient)"/>
+
+  <!-- 连接线（在节点下层）-->
+  <g stroke="#c7d2fe" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.85">
+    <!-- 中心到右上 -->
+    <path d="M 128 128 Q 170 105 195 75"/>
+    <!-- 中心到右下 -->
+    <path d="M 128 128 Q 170 151 195 181"/>
+    <!-- 中心到左侧 -->
+    <path d="M 128 128 Q 95 128 65 128"/>
+    <!-- 中心到左下 -->
+    <path d="M 128 128 Q 100 165 80 200"/>
+  </g>
+
+  <!-- 中心节点 -->
+  <g filter="url(#shadow)">
+    <rect x="108" y="108" width="40" height="40" rx="10" ry="10" fill="url(#centerGradient)"/>
+    <!-- 中心点装饰（白色小点）-->
+    <circle cx="128" cy="128" r="5" fill="#ffffff" opacity="0.95"/>
+  </g>
+
+  <!-- 右上节点（翠绿） -->
+  <g filter="url(#shadow)">
+    <rect x="180" y="55" width="32" height="32" rx="8" ry="8" fill="#ffffff" stroke="#10b981" stroke-width="2.5"/>
+    <circle cx="196" cy="71" r="3.5" fill="#10b981"/>
+  </g>
+
+  <!-- 右下节点（琥珀） -->
+  <g filter="url(#shadow)">
+    <rect x="180" y="161" width="32" height="32" rx="8" ry="8" fill="#ffffff" stroke="#f59e0b" stroke-width="2.5"/>
+    <circle cx="196" cy="177" r="3.5" fill="#f59e0b"/>
+  </g>
+
+  <!-- 左侧节点（粉红） -->
+  <g filter="url(#shadow)">
+    <rect x="44" y="112" width="32" height="32" rx="8" ry="8" fill="#ffffff" stroke="#ec4899" stroke-width="2.5"/>
+    <circle cx="60" cy="128" r="3.5" fill="#ec4899"/>
+  </g>
+
+  <!-- 左下节点（紫色） -->
+  <g filter="url(#shadow)">
+    <rect x="60" y="184" width="32" height="32" rx="8" ry="8" fill="#ffffff" stroke="#8b5cf6" stroke-width="2.5"/>
+    <circle cx="76" cy="200" r="3.5" fill="#8b5cf6"/>
+  </g>
+</svg>

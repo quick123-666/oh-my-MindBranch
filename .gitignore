@@ -1,0 +1,12 @@
+﻿node_modules/
+*.log
+.tmp/
+.cache/
+.DS_Store
+dist/*.exe
+dist/*.zip
+dist/*.yml
+dist/win-unpacked/
+dist/README.md
+*.tmp
+

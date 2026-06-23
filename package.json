@@ -1,0 +1,76 @@
+{
+  "name": "oh-my-mindbranch",
+  "version": "1.0.0",
+  "description": "oh-my-MindBranch - A modern and elegant mind mapping desktop application",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
+  },
+  "keywords": [
+    "mindmap",
+    "electron",
+    "mind-mapping",
+    "思维导图",
+    "desktop-app"
+  ],
+  "author": "zcode",
+  "license": "MIT",
+  "homepage": "https://github.com/yourname/oh-my-MindBranch",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourname/oh-my-MindBranch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourname/oh-my-MindBranch/issues"
+  },
+  "devDependencies": {
+    "electron": "^32.3.3",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.zcode.ohmymindbranch",
+    "productName": "oh-my-MindBranch",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "src/assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "oh-my-MindBranch",
+      "deleteAppDataOnUninstall": false,
+      "installerIcon": "src/assets/icon.ico",
+      "uninstallerIcon": "src/assets/icon.ico",
+      "installerHeader": "src/assets/icon.png",
+      "installerSidebar": "src/assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "src/assets/icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "src/assets/icon.png"
+    }
+  }
+}
