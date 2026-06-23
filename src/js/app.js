@@ -29,6 +29,7 @@
       this._setupTemplateModal();
       this._setupToolbar();
       this._setupMarkdownEditor();
+      this._setupMDImporter();
       this._setupCallbacks();
 
       // 数据变化回调：重新布局与渲染，更新状态栏
@@ -177,8 +178,8 @@
       if (byId('btnUndo')) byId('btnUndo').addEventListener('click', () => this.actionUndo());
       if (byId('btnRedo')) byId('btnRedo').addEventListener('click', () => this.actionRedo());
 
-      // 布局
-      if (byId('btnLayout')) byId('btnLayout').addEventListener('click', () => this.actionLayout());
+      // 布局下拉
+      this._setupLayoutDropdown();
 
       // 概览
       if (byId('btnOverview')) byId('btnOverview').addEventListener('click', () => this.actionOverview());
@@ -208,14 +209,39 @@
 
       // 保存指示回调
       this.storage.onSave((ok) => {
-        const el = byId('saveIndicator');
-        if (!el) return;
-        if (ok) {
-          el.textContent = '已自动保存';
-        } else {
-          el.textContent = '保存失败';
-        }
+        this._refreshSaveIndicator(ok ? 'saved' : 'failed');
       });
+
+      // 初始渲染一次保存指示
+      this._refreshSaveIndicator();
+
+      // MD 文章导入
+      if (byId('btnImportMD')) byId('btnImportMD').addEventListener('click', () => this.actionImportMD());
+      if (byId('btnImportMDClipboard')) byId('btnImportMDClipboard').addEventListener('click', () => this.actionImportMDFromClipboard());
+    }
+
+    // ====== MD 文章导入 ======
+    _setupMDImporter() {
+      // 仅做存在性检查，对话框 DOM 由 importer 模块按需创建
+      this.mdImporter = window.MindMapMDImporter;
+    }
+
+    actionImportMD() {
+      if (!window.MindMapMDImporter) {
+        this._showStatus('MD 导入模块未加载', 1500);
+        return;
+      }
+      window.MindMapMDImporter.openImporterDialog(this);
+    }
+
+    async actionImportMDFromClipboard() {
+      if (!window.MindMapMDImporter) return;
+      await window.MindMapMDImporter.importFromClipboard(this);
+    }
+
+    async actionImportMDFromFile() {
+      if (!window.MindMapMDImporter) return;
+      await window.MindMapMDImporter.importFromFile(this);
     }
 
     _setupCallbacks() {
@@ -241,11 +267,14 @@
       }
       // 数据变化触发重布局与重绘
       this.mindmap.onChange(() => {
+        // 标记为脏数据（用于"导入会覆盖现有内容"等确认）
+        if (this.mindmap.markDirty) this.mindmap.markDirty();
         try {
           window.MindMapLayout.layoutLR(this.mindmap);
           this.renderer.render();
         } catch (e) {}
         this._updateDocTitle();
+        this._refreshSaveIndicator();
       });
 
       // 右键菜单（绑定到节点上，使用 ContextMenu 类）
@@ -278,12 +307,30 @@
           this.actionOpen();
         } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'l') {
           e.preventDefault();
-          this.actionLayout();
+          this.actionExpandAll();
         } else if (e.key === 'F1') {
           e.preventDefault();
           this.actionFitToView();
+        } else if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === 'i') {
+          // Ctrl+I 导入 MD
+          e.preventDefault();
+          this.actionImportMD();
+        } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'i') {
+          // Ctrl+Shift+I 从剪贴板导入
+          e.preventDefault();
+          this.actionImportMDFromClipboard();
         }
       });
+
+      // 监听来自主进程菜单的事件
+      if (window.electronAPI && typeof window.electronAPI.onMenu === 'function') {
+        try {
+          window.electronAPI.onMenu('menu:import-md', () => this.actionImportMD());
+          window.electronAPI.onMenu('menu:import-md-clipboard', () => this.actionImportMDFromClipboard());
+        } catch (e) {
+          console.warn('Menu listener registration failed:', e);
+        }
+      }
     }
 
     // ====== 动作方法（供工具栏与右键菜单调用） ======
@@ -371,6 +418,133 @@
     actionLayout() {
       this._relayoutAndRender();
       this._showStatus('已重新布局', 1200);
+    }
+
+    /**
+     * 布局下拉菜单（折叠到 N 层 / 全部展开）
+     */
+    _setupLayoutDropdown() {
+      const btn = document.getElementById('btnLayout');
+      const dropdown = document.getElementById('layoutDropdown');
+      if (!btn || !dropdown) return;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // 打开时刷新深度项
+        this._populateLayoutDepthItems();
+        dropdown.hidden = !dropdown.hidden;
+      });
+      // 点击其他位置关闭
+      document.addEventListener('click', () => {
+        dropdown.hidden = true;
+      });
+      // "全部展开"项
+      const expandAll = document.getElementById('menuLayoutExpandAll');
+      if (expandAll) {
+        expandAll.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdown.hidden = true;
+          this.actionExpandAll();
+        });
+      }
+    }
+
+    /**
+     * 根据树实际深度，动态生成"折叠到 N 层"菜单项
+     */
+    _populateLayoutDepthItems() {
+      const container = document.getElementById('layoutDepthItems');
+      if (!container) return;
+      const maxDepth = this._getMaxDepth();
+      // maxDepth 为 1 时只有根节点，不显示折叠项（仅显示"全部展开"）
+      if (maxDepth <= 1) {
+        container.innerHTML = '<div class="dropdown-empty">当前树只有 1 层</div>';
+        return;
+      }
+      const items = [];
+      // 折叠到 2 层 / 3 层 / ... / N 层
+      for (let d = 1; d <= maxDepth; d++) {
+        const label = d === 1 ? '折叠到 1 层（仅根）' : '折叠到 ' + d + ' 层';
+        const desc = d === 1 ? '只显示根节点' : '显示到第 ' + d + ' 层，更深层折叠';
+        items.push(
+          '<div class="dropdown-item" data-depth="' + d + '">' +
+          '<svg viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M3,4H21V6H3V4M3,11H21V13H3V11M3,18H21V20H3V18Z"/></svg>' +
+          '<div class="dropdown-text">' +
+          '<span class="dropdown-title">' + label + '</span>' +
+          '<span class="dropdown-desc">' + desc + '</span>' +
+          '</div>' +
+          '</div>'
+        );
+      }
+      container.innerHTML = items.join('');
+      // 绑定点击
+      container.querySelectorAll('.dropdown-item[data-depth]').forEach(el => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const d = parseInt(el.getAttribute('data-depth'), 10);
+          document.getElementById('layoutDropdown').hidden = true;
+          this.actionCollapseToDepth(d);
+        });
+      });
+    }
+
+    /**
+     * 计算整棵树的实际最大深度（根 = 1）
+     */
+    _getMaxDepth() {
+      if (!this.mindmap.rootId) return 0;
+      let max = 0;
+      const walk = (id, d) => {
+        if (d > max) max = d;
+        const n = this.mindmap.get(id);
+        if (!n) return;
+        n.children.forEach(cid => walk(cid, d + 1));
+      };
+      walk(this.mindmap.rootId, 1);
+      return max;
+    }
+
+    /**
+     * 折叠到指定层：1=只根，2=根+一级子，3=根+一级+二级...
+     * 任何深度 >= depth 的节点被折叠
+     * 根节点永远不折叠
+     */
+    actionCollapseToDepth(depth) {
+      if (!this.mindmap.rootId) return;
+      if (depth < 1) depth = 1;
+      const rootId = this.mindmap.rootId;
+      // 遍历所有节点，根据深度设 collapsed
+      const walk = (id, d) => {
+        const n = this.mindmap.get(id);
+        if (!n) return;
+        // 根永远不折叠；其他节点：d >= depth → 折叠
+        if (id !== rootId) {
+          n.collapsed = d >= depth;
+        } else {
+          n.collapsed = false;
+        }
+        n.children.forEach(cid => walk(cid, d + 1));
+      };
+      walk(rootId, 1);
+      // 触发重布局 + 渲染
+      this.storage.suppressHistory = true; // 折叠操作不进撤销栈
+      this._relayoutAndRender();
+      this.storage.suppressHistory = false;
+      requestAnimationFrame(() => this.renderer.fitToView && this.renderer.fitToView());
+      if (this._showStatus) {
+        this._showStatus(depth === 1 ? '已折叠到 1 层（仅根）' : '已折叠到 ' + depth + ' 层', 1500);
+      }
+    }
+
+    /**
+     * 全部展开：清空所有节点的 collapsed 标记
+     */
+    actionExpandAll() {
+      this.mindmap.nodes.forEach(n => { n.collapsed = false; });
+      this.storage.suppressHistory = true;
+      this._relayoutAndRender();
+      this.storage.suppressHistory = false;
+      requestAnimationFrame(() => this.renderer.fitToView && this.renderer.fitToView());
+      if (this._showStatus) this._showStatus('已展开全部节点', 1500);
     }
 
     actionOverview() {
@@ -529,6 +703,10 @@
       this._focusedNodeId = selectedId;
       this.renderer.focusNodeId = selectedId;
       MindMapLayout.layoutLR(this.mindmap);
+      // 聚焦后让 focus 的直接子节点重新分布（含义 B：只动子节点，不重排整树）
+      if (MindMapLayout.relayoutFocusChildren) {
+        MindMapLayout.relayoutFocusChildren(this.mindmap, selectedId, { minGap: 28 });
+      }
       this.renderer.render();
       requestAnimationFrame(() => this.renderer.fitToView());
       this._updateOverviewButton();
@@ -977,6 +1155,34 @@
           this._updateStatus();
           this._statusTimer = null;
         }, duration);
+      }
+    }
+
+    /**
+     * 刷新保存状态指示（右上角"已自动保存"文字）
+     * @param {string} [force] - 'saved' | 'failed' | 'dirty' 强制显示某个状态；不传则按 mindmap.dirty 自动判断
+     */
+    _refreshSaveIndicator(force) {
+      const el = document.getElementById('saveIndicator');
+      if (!el) return;
+      let state = force;
+      if (!state) {
+        state = (this.mindmap && this.mindmap.dirty) ? 'dirty' : 'saved';
+      }
+      if (state === 'dirty') {
+        el.textContent = '● 未保存';
+        el.classList.add('dirty');
+        el.title = '当前导图有未保存的修改';
+      } else if (state === 'failed') {
+        el.textContent = '保存失败';
+        el.classList.remove('dirty');
+        el.classList.add('failed');
+        el.title = '自动保存失败';
+      } else {
+        el.textContent = '已自动保存';
+        el.classList.remove('dirty');
+        el.classList.remove('failed');
+        el.title = '所有修改已自动保存到本地';
       }
     }
 

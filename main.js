@@ -40,6 +40,16 @@ function createWindow() {
           click: () => mainWindow.webContents.send('menu:open')
         },
         {
+          label: '导入 Markdown 文章...',
+          accelerator: 'CmdOrCtrl+I',
+          click: () => mainWindow.webContents.send('menu:import-md')
+        },
+        {
+          label: '从剪贴板导入...',
+          accelerator: 'CmdOrCtrl+Shift+I',
+          click: () => mainWindow.webContents.send('menu:import-md-clipboard')
+        },
+        {
           label: '保存为 JSON...',
           accelerator: 'CmdOrCtrl+S',
           click: () => mainWindow.webContents.send('menu:save')
@@ -218,6 +228,39 @@ ipcMain.handle('file:save-md', async (event, content) => {
     const text = content.endsWith('\n') ? content : content + '\n';
     fs.writeFileSync(result.filePath, text, 'utf-8');
     return { success: true, filePath: result.filePath };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC: 打开 Markdown 文件（用于 MD 导入）
+ipcMain.handle('file:open-md', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: '打开 Markdown 文件',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Markdown', extensions: ['md', 'markdown'] },
+      { name: '文本文件', extensions: ['txt'] },
+      { name: '所有文件', extensions: ['*'] }
+    ]
+  });
+  if (result.canceled || !result.filePaths.length) {
+    return { success: false, canceled: true };
+  }
+  try {
+    const content = fs.readFileSync(result.filePaths[0], 'utf-8');
+    return { success: true, content, filePath: result.filePaths[0] };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
+// IPC: 读取剪贴板内容（用于 MD 导入）
+ipcMain.handle('clipboard:read-text', async () => {
+  try {
+    const { clipboard } = require('electron');
+    const text = clipboard.readText() || '';
+    return { success: true, text };
   } catch (err) {
     return { success: false, error: err.message };
   }

@@ -14,12 +14,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Markdown 导出
   saveMd: (content) => ipcRenderer.invoke('file:save-md', content),
 
+  // Markdown 导入
+  openMd: () => ipcRenderer.invoke('file:open-md'),
+  readClipboard: () => ipcRenderer.invoke('clipboard:read-text'),
+
   // 菜单事件监听
   onMenu: (channel, callback) => {
     const validChannels = [
       'menu:new',
       'menu:open',
       'menu:save',
+      'menu:import-md',
+      'menu:import-md-clipboard',
       'menu:export-png',
       'menu:export-md',
       'menu:open-export-menu',

@@ -19,6 +19,22 @@ class MindMap {
     this.listeners = new Set();    // 数据变化监听器
     this.selectedId = null;
     this.title = '未命名';
+    this.dirty = false;            // 自上次保存/新建/加载后是否有未保存修改
+  }
+
+  /**
+   * 把数据标记为已修改
+   * - 在所有 onChange 触发点之外由 app.js 显式调用
+   * - storage.js 在保存成功后清除
+   */
+  markDirty() {
+    if (!this.dirty) {
+      this.dirty = true;
+    }
+  }
+
+  markClean() {
+    this.dirty = false;
   }
 
   // 生成唯一 ID

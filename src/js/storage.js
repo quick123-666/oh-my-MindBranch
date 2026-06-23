@@ -62,6 +62,7 @@
           }
         };
         localStorage.setItem(STORAGE_KEY_CURRENT, JSON.stringify(saveData));
+        if (this.mindmap && typeof this.mindmap.markClean === 'function') this.mindmap.markClean();
         if (this._onSave) this._onSave(true);
         return true;
       } catch (err) {
@@ -80,6 +81,7 @@
         if (!raw) return false;
         const data = JSON.parse(raw);
         this.mindmap.load(data);
+        if (this.mindmap && typeof this.mindmap.markClean === 'function') this.mindmap.markClean();
         if (data.view) {
           this.mindmap._viewScale = data.view.scale;
           this.mindmap._viewX = data.view.translateX;
@@ -123,6 +125,7 @@
       const docs = this._getDocs();
       if (!docs[name]) return false;
       this.mindmap.load(docs[name]);
+      if (this.mindmap && typeof this.mindmap.markClean === 'function') this.mindmap.markClean();
       return true;
     }
 
